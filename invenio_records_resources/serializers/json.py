@@ -28,22 +28,22 @@ class RecordJSONSerializer(SerializerMixin):
         record = record_state.record
         record_dict = dict(
             pid=pid,
-            metadata=record.dumps(),
-            revision=record.revision_id,
-            created=(
-                pytz.utc.localize(record.created).isoformat()
-                if record.created and not record.created.tzinfo
-                else None
-            ),
-            updated=(
-                pytz.utc.localize(record.updated).isoformat()
-                if record.updated and not record.updated.tzinfo
-                else None
-            ),
-            links=dict(
-                self=link_for(api=True, tpl_key='record', pid=pid),
-                self_html=link_for(api=False, tpl_key='record', pid=pid),
-            )
+            metadata=record,
+            # revision=record.revision_id,
+            # created=(
+            #     pytz.utc.localize(record.created).isoformat()
+            #     if record.created and not record.created.tzinfo
+            #     else None
+            # ),
+            # updated=(
+            #     pytz.utc.localize(record.updated).isoformat()
+            #     if record.updated and not record.updated.tzinfo
+            #     else None
+            # ),
+            # links=dict(
+            #     self=link_for(api=True, tpl_key='record', pid=pid),
+            #     self_html=link_for(api=False, tpl_key='record', pid=pid),
+            # )
         )
 
         return record_dict

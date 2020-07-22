@@ -105,7 +105,6 @@ class AnyUserPermissionPolicy(RecordPermissionPolicy):
     can_read = [AnyUser()]
     can_update = [AnyUser()]
     can_delete = [AnyUser()]
-    can_read_files = [AnyUser()]
     can_update_files = [AnyUser()]
 
 

@@ -36,6 +36,7 @@ class AdminCanCreatePermissionPolicy(RecordPermissionPolicy):
     """Custom permission policy."""
 
     can_create = [Admin()]
+    can_read_files = [Admin()]
 
 
 @pytest.fixture(scope="module")
@@ -90,3 +91,41 @@ def test_create_record_permissions(app_with_custom_permissions, client,
                        'created', 'updated', 'links']
     for field in fields_to_check:
         assert field in response_fields
+
+
+def test_create_read_record_files(app_with_custom_permissions, client,
+                                  input_record, users):
+    """Test record creation."""
+
+    # add files
+    input_record["_files"] = ["file.txt"]
+
+    user1 = users['user1']
+    user2 = users['user2']
+
+    # login as user1
+    login_user_via_view(client, email=user1['email'],
+                        password=user1['password'], login_url='/login')
+    # Create new record
+    response = client.post(
+        "/records", headers=HEADERS, data=json.dumps(input_record)
+    )
+    assert response.status_code == 201
+
+    # Save record pid for posterior operations
+    recid = response.json["pid"]
+    # Read the record
+    response = client.get("/records/{}".format(recid), headers=HEADERS)
+    assert response.status_code == 200
+    assert response.json["metadata"]["_files"] == ["file.txt"]  # Check it matches with the original
+
+    # logout user1
+    client.post('/logout')
+
+    # login as user2 with no admin-access
+    login_user_via_view(client, email=user2['email'],
+                        password=user2['password'], login_url='/login')
+    # Read the record
+    response = client.get("/records/{}".format(recid), headers=HEADERS)
+    assert response.status_code == 200
+    assert response.json["metadata"]["_files"] == []  # Check it matches with the original

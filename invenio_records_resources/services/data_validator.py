@@ -11,24 +11,49 @@
 from ..schemas import MetadataSchemaJSONV1
 
 
-class DataValidator:
-    """Data validator interface."""
+class DataValidatorSchema:
 
-    def validate(self, data, *args, **kwargs):
-        """Validate data."""
+    def load(self, data, **kwargs):
+        """Deserialize incoming data to internal represenation.
+
+        :returns: The transformed data as a dict.
+        """
+        raise NotImplementedError()
+
+    def dump(self, data, **kwargs):
+        """Serialize internal representation.
+
+        :returns: The serialized data as a dict.
+        """
         raise NotImplementedError()
 
 
-class MarshmallowDataValidator:
-    """Data validator based on a Marshamllow schema."""
+class DataValidator:
+    """Data schema interface."""
 
-    def __init__(self, schema=MetadataSchemaJSONV1, *args, **kwargs):
-        """Constructor."""
+    def __init__(self, schema):
         self.schema = schema
 
-    def validate(self, data, context=None):
+    def load(self, data, **kwargs):
         """Validate by dumping it on the marshmallow schema.
 
         :returns: The validated data as a dict.
         """
-        return self.schema(context=context).load(data)
+        return self.schema(**kwargs).load(data)
+
+    def dump(self, data, **kwargs):
+        """Validate by dumping it on the marshmallow schema.
+
+        :returns: The validated data as a dict.
+        """
+        return self.schema(**kwargs).dump(data)
+
+
+class MarshmallowDataValidator(DataValidator):
+    """Data validator based on a Marshamllow schema."""
+
+    def __init__(self):
+        """Constructor."""
+        super(MarshmallowDataValidator, self).__init__(
+            schema=MetadataSchemaJSONV1
+        )

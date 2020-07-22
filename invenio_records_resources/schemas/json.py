@@ -9,7 +9,8 @@
 """Marshmallow JSON schema."""
 
 
-from marshmallow import INCLUDE, Schema, fields, missing, validate
+from marshmallow import INCLUDE, Schema, fields, missing, validate, post_dump
+
 
 from .fields import PersistentIdentifier, SanitizedUnicode
 
@@ -23,6 +24,17 @@ class MetadataSchemaJSONV1(Schema):
         unknown = INCLUDE
 
     title = SanitizedUnicode(required=True, validate=validate.Length(min=3))
+    _files = fields.List(fields.String())
+
+
+    @post_dump
+    def post_dump(self, data, **kwargs):
+        identity = self.context["identity"]
+        permission_policy = self.context["permission_policy"]
+        import ipdb; ipdb.set_trace()
+        if not permission_policy.allows(identity):
+            data["_files"] = []
+        return data
 
 
 class RecordSchemaJSONV1(Schema):

@@ -102,8 +102,17 @@ class RecordService(Service):
         """Retrieve a record."""
         pid, record = self.resolve(id_)
         self.require_permission(identity, "read", record=record)
+        dumped_record = self.data_validator().dump(
+            record,
+            context={
+                "identity": identity,
+                "permission_policy": self.permission_policy(
+                    "read_files", record=record
+                )
+            }
+        )
         # Todo: how do we deal with tombstone pages
-        return self.resource_unit(pid=pid, record=record)
+        return self.resource_unit(pid=pid, record=dumped_record)
 
     def search(self, querystring, identity, pagination=None, *args, **kwargs):
         """Search for records matching the querystring."""
@@ -146,7 +155,7 @@ class RecordService(Service):
     def create(self, data, identity):
         """Create a record."""
         self.require_permission(identity, "create")
-        self.data_validator().validate(data)
+        self.data_validator().load(data)
         record = self.record_cls().create(data)  # Create record in DB
         pid = self.minter()(record_uuid=record.id, data=record)   # Mint PID
         # Create record state
